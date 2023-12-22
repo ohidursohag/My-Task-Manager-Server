@@ -172,6 +172,18 @@ app.get('/my-task/api/v1/all-tasks/:email',verifyToken, async (req, res) => {
   }
 })
 
+// delete task by id
+app.delete('/my-task/api/v1/delete-task/:id', verifyToken, async (req, res) => {
+   try {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) }
+      const result = await taskCollection.deleteOne(query);
+      return res.send(result);
+   } catch (error) {
+      return res.send({ error: true, message: error.message }); 
+   }
+})
+
 
 // Test Api
 app.get('/', (req, res) => {
