@@ -13,7 +13,7 @@ app.use(cors({
    origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      ""
+      "https://my-task-manager-7c7cb.web.app"
    ],
    credentials: true,
 }));
@@ -181,6 +181,35 @@ app.delete('/my-task/api/v1/delete-task/:id', verifyToken, async (req, res) => {
       return res.send(result);
    } catch (error) {
       return res.send({ error: true, message: error.message }); 
+   }
+})
+
+// Change/update Task data
+app.patch('/my-task/api/v1/update-task-data/:id', verifyToken, async (req, res) => {
+   try {
+      const { id } = req.params;
+      const updateTaskData = req.body
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+         $set: { ...updateTaskData }
+      }
+      const result = await taskCollection.updateOne(filter, updatedDoc)
+      return res.send(result);
+   } catch (error) {
+      return res.send({ error: true, message: error.message });
+   }
+})
+
+// Get Single Task data by Id
+app.get('/my-task/api/v1/task-data/:id', verifyToken, async (req, res) => {
+   console.log('Hit korce');
+   try {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await taskCollection.findOne(query);
+      return res.send(result);
+   } catch (error) {
+      return res.send({ error: true, message: error.message });
    }
 })
 
