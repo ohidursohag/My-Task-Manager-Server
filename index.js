@@ -61,7 +61,8 @@ async function run() {
 run().catch(console.dir);
 
 // Database Collection
-const userCollection = client.db('eParcelDB').collection('users');
+const userCollection = client.db('myTaskDB').collection('users');
+const taskCollection = client.db('myTaskDB').collection('allTasks');
 
 
 // JWT:: Create Access token 
@@ -120,10 +121,56 @@ app.put('/my-task/api/v1/create-or-update-user/:email', verifyToken, async (req,
    }
 })
 
+// get single user data by email 
+app.get('/my-task/api/v1/get-user-data/:email', verifyToken, async (req, res) => {
+   try {
+      const email = req.params.email;
+      if (email !== req.user?.email) {
+         return res.status(403).send({ message: 'Forbidden Access', code: 403 })
+      }
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      //   console.log('user data -------->',result);
+      return res.send(result);
+   } catch (error) {
+      return res.send({ error: true, message: error.message });
+   }
+})
 
 
 
+// --------------- Task Apis ----------
 
+// Add booked Parcel 
+app.post('/my-task/api/v1/add-new-task', verifyToken, async (req, res) => {
+   try {
+      const newTaskData = req.body;
+      const result = await taskCollection.insertOne(newTaskData);
+      return res.send(result);
+   } catch (error) {
+      return res.send({ error: true, message: error.message });
+   }
+})
+
+// Get user Specific All Task by email
+
+app.get('/my-task/api/v1/all-tasks/:email',verifyToken, async (req, res) => {
+  try {
+     const email = req.params.email;
+     if (email !== req.user?.email) {
+        return res.status(403).send({ message: 'Forbidden Access', code: 403 })
+     }
+     let queryObj = { userEmail: email };
+     const taskStatus = req.query?.taskStatus;
+     if (taskStatus) {
+        queryObj.taskStatus = taskStatus
+     }
+     const result = await taskCollection.find(queryObj).toArray()
+     return res.send(result)
+  } catch (error) {
+     return res.send({ error: true, message: error.message });
+  }
+})
 
 
 // Test Api
